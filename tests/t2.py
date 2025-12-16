@@ -1,12 +1,20 @@
 from otter.test_files import test_case
 import torch
 import torch.nn.functional as F
+from unittest.mock import patch
 
 
 OK_FORMAT = False
 
 name = "Exercise 5.2"
 points = 4
+
+
+def _blocked(*args, **kwargs):
+    raise AssertionError(
+        "Do not call torch.nn.functional.cross_entropy or torch.nn.CrossEntropyLoss "
+        "inside cross_entropy_from_scratch."
+    )
 
 
 def _make_case(
@@ -44,12 +52,13 @@ def test_1(env):
         device=device,
         ignore_index=ignore_index)
 
-    got = env['cross_entropy_from_scratch'](
-        logits,
-        targets,
-        ignore_index=ignore_index,
-        reduction=reduction,
-    )
+    with patch.object(F, "cross_entropy", side_effect=_blocked), patch("torch.nn.CrossEntropyLoss", side_effect=_blocked):
+        got = env['cross_entropy_from_scratch'](
+            logits,
+            targets,
+            ignore_index=ignore_index,
+            reduction=reduction,
+        )
 
     exp = F.cross_entropy(
         logits.detach(),  # compare values; grads are tested separately
@@ -78,9 +87,10 @@ def test_2(env):
 
     targets = torch.tensor([0, ignore_index, 2, ignore_index], device=device, dtype=torch.long)
 
-    got = env['cross_entropy_from_scratch'](
-        logits, targets, ignore_index=ignore_index, reduction="mean"
-    )
+    with patch.object(F, "cross_entropy", side_effect=_blocked), patch("torch.nn.CrossEntropyLoss", side_effect=_blocked):
+        got = env['cross_entropy_from_scratch'](
+            logits, targets, ignore_index=ignore_index, reduction="mean"
+        )
 
     exp = F.cross_entropy(
         logits.detach(), targets, ignore_index=ignore_index, reduction="mean"
@@ -97,12 +107,13 @@ def test_3(env):
     logits1, targets = _make_case(seed=999, N=N, C=C, device=device, ignore_index=ignore_index)
     logits2 = logits1.clone().detach().requires_grad_(True)
 
-    loss1 = env['cross_entropy_from_scratch'](
-        logits1,
-        targets,
-        ignore_index=ignore_index,
-        reduction="mean",
-    )
+    with patch.object(F, "cross_entropy", side_effect=_blocked), patch("torch.nn.CrossEntropyLoss", side_effect=_blocked):    
+        loss1 = env['cross_entropy_from_scratch'](
+            logits1,
+            targets,
+            ignore_index=ignore_index,
+            reduction="mean",
+        )
 
     loss2 = F.cross_entropy(
         logits2,
