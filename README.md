@@ -1,2 +1,4 @@
-# CV-2526-ExSheet5
-Computer Vision PS Exercise set 5 (WS25/26)
+# Exercise set 5
+
+For better rendering of math formulas, the exercise set is described in the 
+`Exercise.ipynb` notebook.
