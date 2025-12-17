@@ -14,7 +14,6 @@ def stable_log_softmax(logits: torch.Tensor):
 
 
 # Exercise 5.2
-# Exercise 5.2
 def cross_entropy_from_scratch(
     logits: torch.Tensor,
     targets: torch.Tensor,
